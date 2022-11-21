@@ -16,6 +16,8 @@ else:
 
 soem_sources = []
 soem_inc_dirs = []
+motion_sources = []
+motion_inc_dirs = []
 
 if sys.platform.startswith('win'):
     soem_macros = [('WIN32', ''), ('_CRT_SECURE_NO_WARNINGS', '')]
@@ -29,26 +31,39 @@ elif sys.platform.startswith('linux'):
     soem_libs = ['pthread', 'rt'] 
     os_name = 'linux'
 
-soem_macros.append(('EC_VER2', ''))
+soem_macros.append(('EC_VER1', ''))
 
-soem_sources.extend([os.path.join('.', 'soem', 'osal', os_name, 'osal.c'),
-                     os.path.join('.', 'soem', 'oshw', os_name, 'oshw.c'),
-                     os.path.join('.', 'soem', 'oshw', os_name, 'nicdrv.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatbase.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatcoe.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatconfig.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatdc.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatfoe.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatmain.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatprint.c'),
-                     os.path.join('.', 'soem', 'soem', 'ethercatsoe.c')])
+soem_sources.extend([os.path.join('.', 'cmotion', 'soem', 'osal', os_name, 'osal.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'oshw', os_name, 'oshw.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'oshw', os_name, 'nicdrv.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatbase.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatcoe.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatconfig.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatdc.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatfoe.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatmain.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatprint.c'),
+                     os.path.join('.', 'cmotion', 'soem', 'soem', 'ethercatsoe.c')])
 
-soem_inc_dirs.extend([os.path.join('.', 'soem', 'oshw', os_name),
-                      os.path.join('.', 'soem', 'osal', os_name),
-                      os.path.join('.', 'soem', 'oshw'),
-                      os.path.join('.', 'soem', 'osal'),
-                      os.path.join('.', 'soem', 'soem')])
+soem_inc_dirs.extend([os.path.join('.', 'cmotion', 'soem', 'oshw', os_name),
+                      os.path.join('.', 'cmotion', 'soem', 'osal', os_name),
+                      os.path.join('.', 'cmotion', 'soem', 'oshw'),
+                      os.path.join('.', 'cmotion', 'soem', 'osal'),
+                      os.path.join('.', 'cmotion', 'soem', 'soem')])
 
+
+motion_sources.extend([
+    os.path.join('.', 'cmotion', 'motion', 'arrayobject.c'),
+    os.path.join('.', 'cmotion', 'motion', 'wrap_master.c'),
+    os.path.join('.', 'cmotion', 'motion', 'operation.c'),
+    os.path.join('.', 'cmotion', 'motion', 'test.c'),
+])
+
+motion_inc_dirs.extend([
+    os.path.join('.', 'cmotion'),
+    os.path.join('.', 'cmotion', 'motion'),
+    os.path.join('.', 'cmotion', 'soem'),
+])
 
 def readme():
     """see: http://python-packaging.readthedocs.io/en/latest/metadata.html"""
@@ -78,11 +93,11 @@ ext = '.pyx' if USE_CYTHON else '.c'
 extensions = [
     Extension(
         'pysoem.pysoem',
-        ['pysoem/pysoem'+ext] + soem_sources,
+        ['pysoem/pysoem'+ext] + soem_sources + motion_sources,
         define_macros=soem_macros,
         libraries=soem_libs,
         library_dirs=soem_lib_dirs,
-        include_dirs=['./pysoem'] + soem_inc_dirs
+        include_dirs=['./pysoem'] + soem_inc_dirs + motion_inc_dirs
     )
 ]
 
@@ -95,7 +110,7 @@ setup(name='pysoem',
       description='Cython wrapper for the SOEM Library',
       author='Benjamin Partzsch',
       author_email='benjamin_partzsch@web.de',
-      url='https://github.com/bnjmnp/pysoem',
+      url='https://github.com/OpenEtherCATsociety/SOEM.git',
       license='MIT',
       long_description=readme(),
       ext_modules=extensions,

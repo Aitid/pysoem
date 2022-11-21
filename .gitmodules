@@ -1,3 +1,3 @@
-[submodule "soem"]
-	path = soem
-	url = https://github.com/bnjmnp/SOEM.git
+[submodule "cmotion"]
+	path = cmotion
+	url = https://github.com/Aitid/cmotion.git

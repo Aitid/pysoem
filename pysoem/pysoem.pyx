@@ -12,6 +12,8 @@
 """PySOEM is a Cython wrapper for the SOEM library."""
 
 cimport cpysoem
+from cpython cimport array
+import array
 
 import sys
 import logging
@@ -370,7 +372,10 @@ cdef class CdefMaster:
             int: Working Counter
         """
         return cpysoem.ecx_receive_processdata(&self._ecx_contextt, timeout)
-    
+
+    def _setup(self, ifname):
+        return cpysoem.setup(ifname)
+
     def _get_slave(self, int pos):
         if pos < 0:
             raise IndexError('requested slave device is not available')
@@ -961,15 +966,15 @@ cdef class CdefSlave:
         """Slaves callback function that is called during config_init.
         
         When the state changes from Pre-Operational state to Operational state."""
-        return <object>self._ec_slave.user
+        return <object>self._ecx_contextt.userdata
     
     def _set_PO2SOconfig(self, value):
         self._cd.func = value
-        self._ec_slave.user = <void*>self._cd
+        self._ecx_contextt.userdata = <void*>self._cd
         if value is None:
-            self._ec_slave.PO2SOconfig = NULL
+            self._ec_slave.PO2SOconfigx = NULL
         else:
-            self._ec_slave.PO2SOconfig = _xPO2SOconfig
+            self._ec_slave.PO2SOconfigx = _xPO2SOconfigx
 
     def _get_state(self):
         """Request a new state.
@@ -1137,13 +1142,42 @@ cdef class CdefCoeObjectEntry:
         return self._ex_oelist.ObjAccess[self._item]
         
 
-cdef int _xPO2SOconfig(cpysoem.uint16 slave, void* user):
+cdef int _xPO2SOconfigx(cpysoem.ecx_contextt* context, uint16_t slave):
     assert(slave>0)   
     cdef _CallbackData cd
-    cd = <object>user
+    cd = <object>context.userdata
     cd.exc_raised = False
     try:
         (<object>cd.func)(slave-1)
     except:
         cd.exc_raised = True
         cd.exc_info=sys.exc_info()
+
+
+def setup(ifname):
+    return cpysoem.setup(ifname.encode('utf8'))
+
+
+def start(ifname):
+    cpysoem.start(ifname.encode('utf8'))
+
+
+def enable_csp_mode():
+    return cpysoem.enable_csp_mode()
+
+def complete():
+    return cpysoem.complete()
+
+def rt_csp(array.array a, array.array b):
+    cdef cpysoem.PyArrayObject_coordinates points
+    cdef int p[2]
+
+    assert len(a) == len(b)
+    print(a)
+    cpysoem.create_array(&points, 2, len(b))
+
+    for index in range(len(a)):
+        p[0], p[1] = a[index], b[index]
+        cpysoem.add_column_array(&points, p, 2)
+    cpysoem.rt_csp(&points)
+

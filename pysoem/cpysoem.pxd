@@ -176,9 +176,8 @@ cdef extern from "ethercat.h":
         uint8            group
         uint8            FMMUunused
         boolean          islost
-        int              (*PO2SOconfig)(uint16 slave, void* user)
+        int              (*PO2SOconfig)(uint16 slave)
         int              (*PO2SOconfigx)(ecx_contextt* context, uint16 slave)
-        void*            user
         char             *name #[EC_MAXNAME + 1]
     
     ctypedef struct ec_groupt:
@@ -266,6 +265,7 @@ cdef extern from "ethercat.h":
         int            (*FOEhook)(uint16 slave, int packetnumber, int datasize)
         int            (*EOEhook)(ecx_contextt* context, uint16 slave, void* eoembx)
         int            manualstatechange
+        void           *userdata
         
     ctypedef struct ec_ODlistt:
         uint16  Slave
@@ -326,3 +326,27 @@ cdef extern from "ethercat.h":
 
     int ecx_FPWR(ecx_portt *port, uint16 ADP, uint16 ADO, uint16 length, void *data, int timeout)
     int ecx_FPRD(ecx_portt *port, uint16 ADP, uint16 ADO, uint16 length, void *data, int timeout)
+
+
+cdef extern from "wrap_master.h":
+    int setup(char *ifname)
+    int enable_csp_mode()
+    void complete()
+
+
+cdef extern from "arrayobject.h":
+    ctypedef struct PyArrayObject_coordinates:
+        int *axis[10]
+        int shape[2]
+        int index
+
+    void create_array(PyArrayObject_coordinates *py_arr, int row, int col);
+    int add_column_array(PyArrayObject_coordinates *py_arr, int point[], int dim);
+
+
+cdef extern from "operation.h":
+    void rt_csp(PyArrayObject_coordinates *points);
+
+
+cdef extern from "test.h":
+    void start(char *ifname)
