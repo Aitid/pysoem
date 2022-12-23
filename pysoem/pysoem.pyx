@@ -1168,16 +1168,17 @@ def enable_csp_mode():
 def complete():
     return cpysoem.complete()
 
-def rt_csp(array.array a, array.array b):
+def rt_csp(array.array a, array.array b, array.array c):
     cdef cpysoem.PyArrayObject_coordinates points
-    cdef int p[2]
+    cdef int p[3]
 
     assert len(a) == len(b)
+    assert len(b) == len(c)
     print(a)
-    cpysoem.create_array(&points, 2, len(b))
+    cpysoem.create_array(&points, 3, len(b))
 
     for index in range(len(a)):
-        p[0], p[1] = a[index], b[index]
-        cpysoem.add_column_array(&points, p, 2)
+        p[0], p[1], p[2] = a[index], b[index], c[index]
+        cpysoem.add_column_array(&points, p, 3)
     cpysoem.rt_csp(&points)
 
