@@ -56,7 +56,6 @@ motion_sources.extend([
     os.path.join('.', 'cmotion', 'motion', 'arrayobject.c'),
     os.path.join('.', 'cmotion', 'motion', 'wrap_master.c'),
     os.path.join('.', 'cmotion', 'motion', 'operation.c'),
-    os.path.join('.', 'cmotion', 'motion', 'test.c'),
 ])
 
 motion_inc_dirs.extend([

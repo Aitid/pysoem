@@ -373,9 +373,6 @@ cdef class CdefMaster:
         """
         return cpysoem.ecx_receive_processdata(&self._ecx_contextt, timeout)
 
-    def _setup(self, ifname):
-        return cpysoem.setup(ifname)
-
     def _get_slave(self, int pos):
         if pos < 0:
             raise IndexError('requested slave device is not available')
@@ -524,6 +521,13 @@ class ConfigMapError(Exception):
 
     def __init__(self, error_list):
         self.error_list = error_list
+
+
+class SynchronizationError(Exception):
+    """ Errors related to synchronization of slaves """
+
+class SlaveNotFoundError(Exception):
+    """ No slaves found """ 
 
 
 class EepromError(Exception):
@@ -1154,12 +1158,16 @@ cdef int _xPO2SOconfigx(cpysoem.ecx_contextt* context, uint16_t slave):
         cd.exc_info=sys.exc_info()
 
 
-def setup(ifname):
-    return cpysoem.setup(ifname.encode('utf8'))
-
-
-def start(ifname):
-    cpysoem.start(ifname.encode('utf8'))
+def setup(ifname, int cycletime):
+    result = cpysoem.setup(ifname.encode('utf8'), cycletime)
+    if result == -1:
+        raise SynchronizationError('Not all slaves reached operational state')
+    if result == -2:
+        raise SlaveNotFoundError('No slaves found')
+    if result == -3:
+        raise ConnectionError('could not open interface {}. Execute as root'.format(ifname))
+    if result == -4:
+        raise Exception('unexpected error')
 
 
 def enable_csp_mode():
@@ -1168,17 +1176,14 @@ def enable_csp_mode():
 def complete():
     return cpysoem.complete()
 
-def rt_csp(array.array a, array.array b, array.array c):
+def rt_csp(array.array a, array.array b, array.array c, int cycletime):
     cdef cpysoem.PyArrayObject_coordinates points
     cdef int p[3]
 
     assert len(a) == len(b)
     assert len(b) == len(c)
-    print(a)
     cpysoem.create_array(&points, 3, len(b))
-
-    for index in range(len(a)):
+    for index in range(len(b)):
         p[0], p[1], p[2] = a[index], b[index], c[index]
         cpysoem.add_column_array(&points, p, 3)
-    cpysoem.rt_csp(&points)
-
+    cpysoem.rt_csp(&points, cycletime)

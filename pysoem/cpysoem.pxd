@@ -91,7 +91,7 @@ cdef extern from "ethercat.h":
         pass
     
     # from eethercatmain.h
-    
+
     ctypedef struct ec_adaptert:
         char* name
         char* desc
@@ -329,7 +329,7 @@ cdef extern from "ethercat.h":
 
 
 cdef extern from "wrap_master.h":
-    int setup(char *ifname)
+    int setup(char *ifname, int cycletime)
     int enable_csp_mode()
     void complete()
 
@@ -342,11 +342,8 @@ cdef extern from "arrayobject.h":
 
     void create_array(PyArrayObject_coordinates *py_arr, int row, int col);
     int add_column_array(PyArrayObject_coordinates *py_arr, int point[], int dim);
+    void infiniti_loop();
 
 
 cdef extern from "operation.h":
-    void rt_csp(PyArrayObject_coordinates *points);
-
-
-cdef extern from "test.h":
-    void start(char *ifname)
+    int rt_csp(PyArrayObject_coordinates *points, int cycletime);
